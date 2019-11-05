@@ -155,10 +155,10 @@ android {
     }
     signingConfigs {
         debug {
-            storeFile file('debug.keystore')
-            storePassword 'android'
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
+            storeFile file('Hermes.keystore')
+            storePassword '123456'
+            keyAlias 'Hermes'
+            keyPassword '123456'
         }
     }
     buildTypes {
