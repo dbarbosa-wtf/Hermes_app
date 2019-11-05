@@ -155,11 +155,18 @@ android {
     }
     signingConfigs {
         debug {
-            storeFile file('Hermes.keystore')
+            storeFile file('hermes.keystore')
             storePassword '123456'
             keyAlias 'Hermes'
             keyPassword '123456'
         }
+        release{
+            storeFile file('hermes.keystore')
+            storePassword '123456'
+            keyAlias 'hermes'
+            keyPassword '123456'
+        }
+
     }
     buildTypes {
         debug {
@@ -168,7 +175,7 @@ android {
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://facebook.github.io/react-native/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
