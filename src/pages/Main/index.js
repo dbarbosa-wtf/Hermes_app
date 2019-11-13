@@ -3,12 +3,30 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import LinearGradient from 'react-native-linear-gradient';
 import CardCompromissos from '~/components/card_compromise'
 import {
-  Text, Image, StyleSheet, Dimensions, ImageBackground, StatusBar,View,BackHandler
+  Text, 
+  Image,
+  StyleSheet,
+  Dimensions,
+  ImageBackground,
+  StatusBar,
+  View,
+  BackHandler,
+  PixelRatio
 } from 'react-native';
 
 import { Avatar,Header, ScrView } from './styles';
 import OneSignal from 'react-native-onesignal';
 import io from 'socket.io-client';
+
+const widthPercentageToDP = widthPercent => {
+  const screenWidth = Dimensions.get('window').width;
+  return PixelRatio.roundToNearestPixel(screenWidth * parseFloat(widthPercent) / 100);
+};
+
+const heightPercentageToDP = heightPercent => {
+  const screenHeight = Dimensions.get('window').height;
+return PixelRatio.roundToNearestPixel(screenHeight * parseFloat(heightPercent) / 100);
+};
 
 export default class Main extends Component {
   constructor(props) {
@@ -21,7 +39,7 @@ export default class Main extends Component {
   }
 
   componentDidMount(){
-   this.socket =io('https://api.hermesagent.com:3000');
+   this.socket =io('http://172.16.0.90:3000/');
 
    OneSignal.init('9c803710-31ad-454d-85ae-ba1f31c5ec28');
    OneSignal.addEventListener('received', this.onReceived);
@@ -79,20 +97,23 @@ export default class Main extends Component {
             style={styles.logoBack}
         />
       <Header>
-        <TouchableOpacity onPress={this.handleNotification} style={styles.sino}>
-            <Image
-              source={
-              require('~/Images/SINO.png')
-            }
-            />
-          </TouchableOpacity>
-          <Avatar
+        <TouchableOpacity onPress={this.handleNotification} style={styles.cxsino}>
+          <Image
             source={
-            require('~/Images/Doug.jpg')
+             require('~/Images/SINO.png')
             }
-            style={styles.avatar}
-            />
-        </Header>
+            style={
+              styles.sino
+            }
+          />
+        </TouchableOpacity>
+        <Avatar
+          source={
+            require('~/Images/Doug.jpg')
+          }
+          style={styles.avatar}
+        />
+      </Header>
       <Text style={styles.textBase}>Olá</Text>
       <Text style={styles.textBold}>Douglas</Text>
 
@@ -135,14 +156,28 @@ const styles = StyleSheet.create({
 
   logoBack:{
     top:110,
-    right:130
+    right:widthPercentageToDP('30%')
   },
+  
+  cxsino:{
+    left:heightPercentageToDP('1.5%'),        
+    width:50,
+    height:50,       
+  },
+
   sino:{
-    right:10,
+    left:heightPercentageToDP('1.5%')
+  },
+
+  avatar:{
+    borderWidth:2,
+    borderColor:'#FFFFFF',
+    borderRadius:30,
+    left:heightPercentageToDP('02%')
   },
 
   Compromissos:{
-    height:'79%',
+    height:heightPercentageToDP('75%'),
     width:'110%',
     backgroundColor:'#E3EEF9',
   },
@@ -160,13 +195,13 @@ const styles = StyleSheet.create({
     fontSize:25,
     color:'#A1A3B0',
     bottom:10,
-    right:150
+    right:widthPercentageToDP('35%')
   },
 
   textBold:{
     fontFamily:"Poppins Bold",
     fontSize:25,
-    right:115,
+    right:widthPercentageToDP('26%'),
     bottom:18
   },
   sublinhado:{
@@ -184,11 +219,7 @@ const styles = StyleSheet.create({
     left:30
   },
 
-  avatar:{
-    borderWidth:2,
-    borderColor:'#FFFFFF',
-    borderRadius:30
-  },
+  
 
   Header:{
     flex:1,

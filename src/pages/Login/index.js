@@ -1,6 +1,17 @@
 import React, { Component } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
-import { View,StyleSheet,Text,StatusBar,Image,ImageBackground,navigation,SafeAreaView} from 'react-native';
+import {  
+  KeyboardAvoidingView,
+  Dimensions,
+  PixelRatio, 
+  View,
+  StyleSheet,
+  Text,
+  StatusBar,
+  Image,
+  ImageBackground,
+  navigation,
+  SafeAreaView} from 'react-native';
 import {Input,ButtonText,Footer, ErrorMessage} from './styles';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import api from '../../services/api';
@@ -8,8 +19,18 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import * as LoginActions from '~/store/actions/login'
 
+const widthPercentageToDP = widthPercent => {
+  const screenWidth = Dimensions.get('window').width;
+  return PixelRatio.roundToNearestPixel(screenWidth * parseFloat(widthPercent) / 100);
+};
+
+const heightPercentageToDP = heightPercent => {
+  const screenHeight = Dimensions.get('window').height;
+return PixelRatio.roundToNearestPixel(screenHeight * parseFloat(heightPercent) / 100);
+};
 
 class Login extends Component {
+  
   static navigationOptions = {
     header: null,
   };
@@ -20,6 +41,7 @@ class Login extends Component {
     error:''
   };
 
+  
   constructor (props) {
     super(props);
     this.state = {hasFocus: false,
@@ -27,6 +49,8 @@ class Login extends Component {
       borderBottomColorPass:'#E3EEF9'};
       this.login = React.createRef();""
   }
+
+  
 
   handleSubmit=async()=>{
     // const { email,senha } = this.state;
@@ -105,13 +129,14 @@ class Login extends Component {
       })
     }
   }
+  
 
   render() {
     const { email,senha } = this.state;
-    const { error } = this.props;
+    const { error } = this.props;  
 
     return (
-    <View style={styles.principal}>
+    <View style={styles.principal} >
 
       <StatusBar barStyle="light-content" backgroundColor="#443B49" />
 
@@ -130,7 +155,8 @@ class Login extends Component {
           />
       </ImageBackground>
       </View>
-      <View style={styles.bemVindo}>
+
+      <KeyboardAvoidingView style={styles.bemVindo} behavior='padding'>
         <Text style={styles.textoBase}>Bem-Vindo ao</Text>
         <Text style={styles.textBold}>Hermes</Text>
         <View style={styles.login}>
@@ -141,17 +167,21 @@ class Login extends Component {
             value={email}
             onChangeText={this.handleEmailChange}
             ref={this.login}
+            returnKeyType="next" 
+            onSubmitEditing={() => this.senha.focus()}           
             autoCapitalize="none"
-            style={{borderBottomColor:this.state.borderBottomColorLogin,borderBottomWidth:2, top:80, left:50}}
+            style={{borderBottomColor:this.state.borderBottomColorLogin,borderBottomWidth:2, top:80, left:heightPercentageToDP('5%'), width:widthPercentageToDP('70%')}}
             onBlur={ () => this.onBlur('login') }
             onFocus={ () => this.onFocus('login') }
             autoCorrect={false} placeholder="Digite seu email..."/>
           <Input
             value={senha}
             onChangeText={this.handlePasswordChange}
+            ref={this.senha} 
+            returnKeyType="route"            
             secureTextEntry
             autoCapitalize="none"
-            style={{borderBottomColor:this.state.borderBottomColorPass,borderBottomWidth:2, top:80, left:50}}
+            style={{borderBottomColor:this.state.borderBottomColorPass,borderBottomWidth:2, top:80, left:heightPercentageToDP('5%'), width:widthPercentageToDP('70%')}}
             onBlur={ () => this.onBlur('pass') }
             onFocus={ () => this.onFocus('pass') }
             autoCorrect={false}
@@ -174,7 +204,7 @@ class Login extends Component {
             <LinearGradient colors={['#E1544F','#F08155']} style={styles.rodape} />
           </Footer>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </View>
     );
   }
@@ -224,18 +254,18 @@ principal:{
 
 imagem:{
   flex:1,
-  width:120,
-  height:100
+  width:widthPercentageToDP('100%'),
+  height:heightPercentageToDP('50%')
 },
 
 imageBackground:{
-  width:411,
-  height:300
+  width:widthPercentageToDP('100%'),
+  height:heightPercentageToDP('35%')
 },
 
 logo:{
-  top:60,
-  left:320
+  top:widthPercentageToDP('10%'),
+  marginHorizontal: heightPercentageToDP('41%'),
 },
 
 logobutton:{
@@ -243,16 +273,16 @@ logobutton:{
 },
 
 bemVindo:{
-  flex:4,
-  width:370,
+  flex:6,
+  width:widthPercentageToDP('90%'),
   backgroundColor:'#E3EEF9',
 },
 
 login:{
-  height:497,
-  width:390,
-  left:22,
-  top:37,
+  height:heightPercentageToDP('64.5%'),
+  width:widthPercentageToDP('100%'),
+  marginLeft:heightPercentageToDP('5%'),
+  top:widthPercentageToDP('10.3%'),
   backgroundColor:"#FFFFFF",
   fontFamily:'Poppins Regular',
   justifyContent:'flex-start',
@@ -265,8 +295,8 @@ rodape:{
 },
 
 buttonDegrade:{
-  top:150,
-  left:220,
+  top:widthPercentageToDP('30%'),
+  left:heightPercentageToDP('25%'),
   borderRadius: 30,
   width:140,
   height:48,
@@ -291,8 +321,8 @@ inputtxt:{
 },
 
 buttontxt:{
-  top:225,
-  left:30
+  top:widthPercentageToDP('40%'),
+  left:heightPercentageToDP('5%')
 },
 
 });
