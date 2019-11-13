@@ -61,7 +61,7 @@ export default class Main extends Component {
    };
 
   onIds= device => {
-    console.log('id:',device)
+    // console.log('id:',device)
 
     this.socket.emit("RegistrarUsuarioCelular",{
       id_onesignal:device.userId,
