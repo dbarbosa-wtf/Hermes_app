@@ -1,4 +1,15 @@
 import styled from 'styled-components/native';
+import {Dimensions, PixelRatio} from 'react-native';
+
+const widthPercentageToDP = widthPercent => {
+  const screenWidth = Dimensions.get('window').width;
+  return PixelRatio.roundToNearestPixel(screenWidth * parseFloat(widthPercent) / 100);
+};
+
+const heightPercentageToDP = heightPercent => {
+  const screenHeight = Dimensions.get('window').height;
+return PixelRatio.roundToNearestPixel(screenHeight * parseFloat(heightPercent) / 100);
+};
 
 export const Input = styled.TextInput.attrs({
 placeholderTextColor:'#A1A3B0',
@@ -31,8 +42,9 @@ bottom:0;
 
 export const ErrorMessage =styled.Text`
 color:red;
-top:110;
-left:10
+top:${widthPercentageToDP('25%')};
+left:${heightPercentageToDP('5%')};
+right:${heightPercentageToDP('5%')};
 `;
 
 

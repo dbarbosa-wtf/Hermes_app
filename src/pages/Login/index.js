@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-community/async-storage'
 import React, { Component } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import {  
@@ -7,9 +8,9 @@ import {
   View,
   StyleSheet,
   Text,
-  StatusBar,
+  StatusBar,  
   Image,
-  ImageBackground,
+  ImageBackground,  
   navigation,
   SafeAreaView} from 'react-native';
 import {Input,ButtonText,Footer, ErrorMessage} from './styles';
@@ -18,6 +19,8 @@ import api from '../../services/api';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import * as LoginActions from '~/store/actions/login'
+import PropTypes from 'prop-types';
+
 
 const widthPercentageToDP = widthPercent => {
   const screenWidth = Dimensions.get('window').width;
@@ -29,70 +32,80 @@ const heightPercentageToDP = heightPercent => {
 return PixelRatio.roundToNearestPixel(screenHeight * parseFloat(heightPercent) / 100);
 };
 
-class Login extends Component {
+
+
+export default class Login extends Component {
   
   static navigationOptions = {
     header: null,
   };
 
+  static propTypes = {
+    navigation: PropTypes.shape({
+      navigate: PropTypes.func,
+      dispatch: PropTypes.func,
+    }).isRequired,
+  };
+
+  constructor (props) {
+    super(props);
+    
+    this.state = {
+      hasFocus: false,
+      borderBottomColorLogin:'#E3EEF9',
+      borderBottomColorPass:'#E3EEF9'
+    };
+    
+    this.response_global = "";
+
+    this.login = React.createRef();""
+      
+  }
+
   state={
     email:'',
     senha:'',
-    error:''
+    error:''    
   };
 
   
-  constructor (props) {
-    super(props);
-    this.state = {hasFocus: false,
-      borderBottomColorLogin:'#E3EEF9',
-      borderBottomColorPass:'#E3EEF9'};
-      this.login = React.createRef();""
+
+  checarLogin = async(email,senha)=>{
+    
+    const response = await api.post('api/v1/auth', {
+      email: this.state.email,
+      senha: this.state.senha,
+    });   
+    
+    this.response_global=response;
+
+    return response;
+    
   }
 
+  salvarLogin = async()=>{
+    
+    await AsyncStorage.setItem('@Hermes:token',this.response_global.data.data.token)
+    await AsyncStorage.setItem('@Hermes:username',this.response_global.data.data.nome)
+    
+  }
+
+  signIn = async () =>{
+    const{email,senha}=this.state;
+    const {navigation} = this.props;
+    
+    try {
+      await this.checarLogin(email,senha);       
+      await this.salvarLogin();     
+      
+      navigation.navigate('Main');
+    } 
+    catch (err) {                  
+      this.setState({ error: 'Preencha usuário e senha para continuar!' });        
+    }
+    
+  }
   
-
-  handleSubmit=async()=>{
-    // const { email,senha } = this.state;
-     const { loginSuccess, loginFailure,navigation } = this.props;
-
-    // try {
-    //   await api.post(`/api/v1/auth/${email,senha}`)
-    //   //DEU CERTO
-    //   loginSuccess(email,senha);
-    //   //NAVEGAR
-       navigation.navigate('Main')
-    // } catch (err) {
-    //   //SETAR O ERRO
-    //   loginFailure();
-    // }
-    //this.props.navigation.navigate('Main');
-
-  //   if(this.state.email.length === 0 || this.state.senha.length === 0) {
-  //     this.setState({error:'Preencha usuário e senha para continuar!'},)
-  //   }else{
-  //     try {
-  //       const response = await api.post('/api/v1/auth/',{
-  //         email:this.state.email,
-  //         senha:this.state.senha,
-  //       });
-  //       console.log(response.data.data.token)
-
-  //       await AsyncStorage.setItem('@Hermes:token', response.data.token);
-
-  //       const resetAction = StackActions.reset({
-  //         index: 0,
-  //         actions: [
-  //           NavigationActions.navigate({ routeName: 'Main' }),
-  //         ],
-  //       });
-  //       this.props.navigation.dispatch(resetAction);
-  //     } catch (_err) {
-  //       this.setState({ error: 'Houve um problema com o login, verifique suas credenciais!' });
-  //     }
-  //   }
-  }
-
   handleEmailChange = (email) => {
     this.setState({ email });
   };
@@ -100,6 +113,7 @@ class Login extends Component {
   handlePasswordChange = (senha) => {
     this.setState({ senha });
   };
+  
 
   onFocus(type) {
     if(type == "login"){
@@ -128,12 +142,10 @@ class Login extends Component {
         borderBottomColorPass:'#E3EEF9',
       })
     }
-  }
-  
+  }  
 
   render() {
-    const { email,senha } = this.state;
-    const { error } = this.props;  
+    const { email,senha,error } = this.state;     
 
     return (
     <View style={styles.principal} >
@@ -162,13 +174,12 @@ class Login extends Component {
         <View style={styles.login}>
           <Text style={styles.textSemiBold}>Login</Text>
           <LinearGradient colors={['#E1544F','#F08155']} style={styles.sublinhado} />
-          {/* {error && <ErrorMessage>Houve um problema com o login, verifique suas credenciais!</ErrorMessage>} */}
+           {/* {error && <ErrorMessage>Houve um problema com o login, verifique suas credenciais!</ErrorMessage>}  */}
           <Input
             value={email}
             onChangeText={this.handleEmailChange}
             ref={this.login}
-            returnKeyType="next" 
-            onSubmitEditing={() => this.senha.focus()}           
+            returnKeyType="done"                        
             autoCapitalize="none"
             style={{borderBottomColor:this.state.borderBottomColorLogin,borderBottomWidth:2, top:80, left:heightPercentageToDP('5%'), width:widthPercentageToDP('70%')}}
             onBlur={ () => this.onBlur('login') }
@@ -186,9 +197,9 @@ class Login extends Component {
             onFocus={ () => this.onFocus('pass') }
             autoCorrect={false}
             placeholder="Digite aqui sua senha..."/>
-          {error !== 0 && <ErrorMessage>{this.state.error}</ErrorMessage>}
+          {error && <ErrorMessage>{this.state.error}</ErrorMessage>}
           <LinearGradient colors={['#E1544F','#F08155']} style={styles.buttonDegrade} >
-            <TouchableOpacity onPress={this.handleSubmit} style={styles.button}>
+            <TouchableOpacity onPress={this.signIn} style={styles.button}>
               <Text style={styles.textEntrar} >Entrar</Text>
               <Image
                  source={
@@ -327,11 +338,4 @@ buttontxt:{
 
 });
 
-const mapStateToProps = state => ({
-  error: state.login.error,
-});
 
-const mapDispatchToProps = dispatch =>
-  bindActionCreators(LoginActions, dispatch);
-
-export default connect(mapStateToProps,mapDispatchToProps)(Login);

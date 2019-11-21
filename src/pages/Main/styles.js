@@ -29,3 +29,9 @@ height:60px;
 export const ScrView =styled.ScrollView`
 
 `
+export const ButtonText = styled.Text`  
+  color:#443B49;
+  font-size:13px;
+  font-family:Poppins Regular;
+
+`;

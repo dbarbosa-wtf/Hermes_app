@@ -40,6 +40,8 @@ target 'Hermes' do
 
   pod 'react-native-onesignal', :path => '../node_modules/react-native-onesignal'
 
+  pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-community/async-storage'
+
   target 'HermesTests' do
     inherit! :search_paths
     # Pods for testing

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://api.rafaelmarquespaixao.com:3000/',
+  baseURL: 'http://172.16.0.90:3000/',
 });
 
 export default api;

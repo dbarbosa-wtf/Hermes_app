@@ -5,14 +5,14 @@ import Main from '~/pages/Main';
 import Notification from '~/pages/Notification';
 
 
-const Routes = createAppContainer(
+const Routes = ( userLogged = false ) => createAppContainer(
   createSwitchNavigator({
     Login,
     Main,
     Notification,
     },{
-     mode:'modal'
-  })
+      initialRouteName:userLogged ? 'Main' : 'Login',
+    })
 );
 
 export default Routes;

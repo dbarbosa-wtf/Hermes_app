@@ -1,19 +1,37 @@
 import React,{Component} from 'react';
+import AsyncStorage from '@react-native-community/async-storage';
 import '~/config/ReactotronConfig';
 import { Provider } from 'react-redux';
 import store from './store';
-import Routes from '~/routes';
+import createNavigator from '~/routes';
 
 
-class App extends Component {
+export default class App extends Component {
+  state={
+    userChecked:false,
+    userLogged:false,
+  };
+
+  async componentDidMount(){
+    const token = await AsyncStorage.getItem('@Hermes:token')
+    
+    this.setState({
+      userChecked:true,
+      userLogged: !!token,
+    })
+
+  }
+
   render(){
-    return(
-      <Provider store={store}>
-        <Routes />
-      </Provider>
-    )
+    const {userChecked,userLogged} = this.state;
+
+    if(!userChecked) return null;
+
+    const Routes = createNavigator(userLogged)
+
+    return  <Routes />;
   }
 
 }
 
-export default App;
+

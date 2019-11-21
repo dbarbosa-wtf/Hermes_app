@@ -1,4 +1,5 @@
 import React,{Component} from 'react';
+import AsyncStorage from '@react-native-community/async-storage';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import LinearGradient from 'react-native-linear-gradient';
 import CardCompromissos from '~/components/card_compromise'
@@ -14,9 +15,11 @@ import {
   PixelRatio
 } from 'react-native';
 
-import { Avatar,Header, ScrView } from './styles';
+import { Header, ScrView,ButtonText } from './styles';
 import OneSignal from 'react-native-onesignal';
 import io from 'socket.io-client';
+import PropTypes from 'prop-types';
+import { Avatar } from 'react-native-elements';
 
 const widthPercentageToDP = widthPercent => {
   const screenWidth = Dimensions.get('window').width;
@@ -28,19 +31,52 @@ const heightPercentageToDP = heightPercent => {
 return PixelRatio.roundToNearestPixel(screenHeight * parseFloat(heightPercent) / 100);
 };
 
+ const socket =io('http://172.16.0.90:3000/',{
+   transports: ['websocket'], 
+   jsonp: false 
+ });
+
+
 export default class Main extends Component {
+  static propTypes = {
+    navigation: PropTypes.shape({
+    navigate: PropTypes.func,      
+    }).isRequired,
+  };
+
   constructor(props) {
     super(props)
-    this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
+    this.state={
+      show:false,
+    };
+  }
+
+  ShowHideComponent=()=>{
+    if(this.state.show == false){
+      this.setState({show:true});
+    }else{
+      this.setState({show:false})
+    }
   }
 
   handleNotification=async()=>{
-    this.props.navigation.navigate('Notification');
+    const {navigation}=this.props;
+    
+    navigation.navigate('Notification');
   }
 
-  componentDidMount(){
-   this.socket =io('http://172.16.0.90:3000/');
+  async componentDidMount(){   
+    
+    const nome = await AsyncStorage.getItem('@Hermes:username');
+    
+    this.setState({nome});
+    
+    socket.connect ();
+     socket.on ('connect', () => { 
+     console.log ('conectado ao servidor')
+    }); 
 
+    
    OneSignal.init('9c803710-31ad-454d-85ae-ba1f31c5ec28');
    OneSignal.addEventListener('received', this.onReceived);
    OneSignal.addEventListener('opened',this.onOpened);
@@ -49,7 +85,6 @@ export default class Main extends Component {
 
   onReceived= data => {
     console.log('Notification received:',data);
-
   };
 
   onOpened= notification => {
@@ -61,31 +96,29 @@ export default class Main extends Component {
    };
 
   onIds= device => {
-    // console.log('id:',device)
-
-    this.socket.emit("RegistrarUsuarioCelular",{
-      id_onesignal:device.userId,
-      id_usuario: 40
-    });
+    //  console.log('id:',device)
+    
+      socket.emit("RegistrarUsuarioCelular",{
+        id_onesignal:device.userId,
+        id_usuario: 40
+      });
   };
 
-//   componentWillMount() {
-//   BackHandler.addEventListener('hardwareBackPress', this.handleBackButtonClick);
-
-//  }
-
    componentWillUnmount() {
-  //   BackHandler.removeEventListener('hardwareBackPress', this.handleBackButtonClick);
+  
      OneSignal.removeEventListener('received', this.onReceived);
      OneSignal.removeEventListener('opened', this.onOpened);
      OneSignal.removeEventListener('ids', this.onIds);
   }
+  
+  signOut = async ()=>{
+    const {navigation}=this.props;
 
+    await AsyncStorage.clear();
 
-  handleBackButtonClick() {
-    this.props.navigation.goBack(null);
-    return true;
+    navigation.navigate('Login');
   }
+
   render = () =>{
     return(
     <View style={styles.container} >
@@ -107,17 +140,28 @@ export default class Main extends Component {
             }
           />
         </TouchableOpacity>
-        <Avatar
+        
+        <Avatar          
+          rounded
+          showEditButton   
+          size={60}
+          title="dl"
+          onPress={this.ShowHideComponent}
+          activeOpacity={0.7}                
+          containerStyle={{borderWidth:2, borderColor:'#00000029',marginLeft:10}}
           source={
             require('~/Images/Doug.jpg')
           }
-          style={styles.avatar}
         />
+                
       </Header>
-      <Text style={styles.textBase}>Olá</Text>
-      <Text style={styles.textBold}>Douglas</Text>
+      
+      <View style={styles.tituloNome}>
+       <Text style={styles.textBase}>Olá</Text>
+       <Text style={styles.textBold}>{this.state.nome}</Text> 
+      </View>
 
-      <View style={styles.barra}/>
+      <View style={styles.barra}/> 
 
       <View style={styles.Compromissos}>
         <View style={styles.Header}>
@@ -138,6 +182,23 @@ export default class Main extends Component {
           </ScrView>
         </View>
       </View>
+
+      {this.state.show ? (
+        <View style={styles.Card}>        
+          <View style={styles.CardBody}>
+            <View style={styles.linha}></View>
+            <TouchableOpacity onPress={this.signOut}>
+              <ButtonText>Perfil</ButtonText>
+            </TouchableOpacity>          
+          </View>          
+          <View style={styles.Sair}>
+            <TouchableOpacity onPress={this.signOut}>
+              <ButtonText style={styles.buttontxt}>Sair</ButtonText>        
+            </TouchableOpacity>
+        </View>
+      </View>
+      ):null }
+      
     </View>
     );
   }
@@ -145,6 +206,10 @@ export default class Main extends Component {
 };
 
 const styles = StyleSheet.create({
+  tituloNome:{        
+    right:widthPercentageToDP('13%'),
+  },
+
   container: {
     flex: 1,
     flexDirection:'column',
@@ -152,6 +217,24 @@ const styles = StyleSheet.create({
     justifyContent:'flex-end',
     paddingHorizontal: 10,
     backgroundColor:'#FFFFFF'
+  },
+
+  Card:{    
+    position:'absolute',
+    backgroundColor:'#FFFF',
+    borderColor:'lightgray',
+    borderWidth:1,
+    borderRadius:4,          
+    top:85,
+    height:80,
+    width:140,
+    right:heightPercentageToDP('1.5%'),
+  },
+
+  CardBody:{       
+    width:widthPercentageToDP('15%'),
+    marginTop:heightPercentageToDP('2.5%'),
+    marginLeft:widthPercentageToDP('4%')    
   },
 
   logoBack:{
@@ -167,13 +250,6 @@ const styles = StyleSheet.create({
 
   sino:{
     left:heightPercentageToDP('1.5%')
-  },
-
-  avatar:{
-    borderWidth:2,
-    borderColor:'#FFFFFF',
-    borderRadius:30,
-    left:heightPercentageToDP('02%')
   },
 
   Compromissos:{
@@ -193,17 +269,17 @@ const styles = StyleSheet.create({
   textBase:{
     fontFamily:"Poppins Regular",
     fontSize:25,
-    color:'#A1A3B0',
-    bottom:10,
-    right:widthPercentageToDP('35%')
+    color:'#A1A3B0',    
+    bottom:5,  
   },
 
   textBold:{
     fontFamily:"Poppins Bold",
-    fontSize:25,
-    right:widthPercentageToDP('26%'),
-    bottom:18
+    fontSize:25,  
+    bottom:16,
+    
   },
+
   sublinhado:{
     top:50,
     left:30,
@@ -217,9 +293,7 @@ const styles = StyleSheet.create({
     fontSize:18,
     top:50,
     left:30
-  },
-
-  
+  },  
 
   Header:{
     flex:1,
@@ -231,8 +305,24 @@ const styles = StyleSheet.create({
     width:'90%',
     alignSelf: 'center',
     justifyContent:'center',
-
   },
+
+  buttontxt:{
+    textDecorationLine:'underline',
+    fontFamily:"Poppins Bold",
+    fontSize:12,    
+  },
+
+  Sair:{    
+    marginTop:heightPercentageToDP('1%'),
+    marginLeft:widthPercentageToDP('25%')
+  },
+
+  linha:{
+    borderTopColor: '#C9CEDB',
+    borderTopWidth: 2,
+    marginBottom: heightPercentageToDP('1%')
+  }
 
 });
 
